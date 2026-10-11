@@ -1,6 +1,6 @@
 // Upload → Analyse → Prüfung → Freigabe → Archivierung → Excel
 import * as drive from './drive.js';
-import { analysieren, dateiHash, pdfZeilen, HOCH, MITTEL, NIEDRIG } from './analyse.js';
+import { analysieren, dateiHash, pdfZeilen, pdfInfo, pdfSeitenAlsBilder, HOCH, MITTEL, NIEDRIG } from './analyse.js';
 import { dokumentBuchen, dokumentDubletten } from './buchung.js';
 
 const $ = (s) => document.querySelector(s);
@@ -59,6 +59,23 @@ async function hochladen(dateien) {
     const vorhanden = await drive.sucheHash(hash);
     if (vorhanden.length) {
       ctx.meldung(`Möglicherweise bereits erfasst: „${f.name}“ wurde schon einmal hochgeladen (${vorhanden[0].name}). Nicht erneut hochgeladen.`, 'fehler');
+      continue;
+    }
+    const istPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+    const info = istPdf ? await pdfInfo(f).catch(() => null) : null;
+    if (info && info.seiten > 1 && info.gescannt) {
+      // Eingescanntes PDF mit mehreren Seiten: jede Seite = ein Beleg. Das Original bleibt unverändert in „Scans“.
+      ctx.meldung(`„${f.name}“: ${info.seiten} Seiten erkannt – jede Seite wird als eigener Beleg vorbereitet …`);
+      await drive.dateiHochladen(f.name, ctx.zustand.unterordner['Scans'].id, f, 'application/pdf', { hash, status: 'scan' });
+      const bilder = await pdfSeitenAlsBilder(f);
+      const basis = f.name.replace(/\.pdf$/i, '');
+      for (let i = 0; i < bilder.length; i++) {
+        const seitenHash = await dateiHash(bilder[i]);
+        const neu = await drive.dateiHochladen(`${basis} – Seite ${i + 1} von ${bilder.length}.jpg`, eingang.id, bilder[i], 'image/jpeg',
+          { hash: seitenHash, quelle: hash.slice(0, 32), seite: String(i + 1), status: 'eingang' });
+        erste ??= { datei: neu, blob: bilder[i] };
+      }
+      ctx.meldung(`${bilder.length} Belege aus „${f.name}“ liegen unter „Zur Prüfung“. Das Original-PDF ist in ${ctx.zustand.jahr}/Scans/ gespeichert.`, 'ok');
       continue;
     }
     // Original sofort sichern – es geht nie verloren, auch wenn später etwas schiefgeht.
@@ -307,7 +324,7 @@ async function freigeben() {
       ctx.meldung('Gebucht. Das Dokument konnte aber nicht verschoben werden – es liegt noch in _Eingang. Bitte später erneut „Zur Prüfung“ öffnen und ablehnen oder manuell verschieben.', 'fehler');
     }
     schliessen();
-    await zaehlerAktualisieren();
+    await weiter();
   } catch (e) {
     if (!e.dubletten) throw e;
     aktuell.bestaetigt = true;
@@ -327,7 +344,7 @@ async function nurAblegen() {
   await drive.dateiVerschieben(aktuell.datei.id, ctx.zustand.unterordner['Einkommen'].id, ctx.zustand.unterordner['_Eingang'].id, zielName());
   schliessen();
   ctx.meldung(`Abgelegt in ${ctx.zustand.jahr}/Einkommen/ (ohne Buchung).`, 'ok');
-  await zaehlerAktualisieren();
+  await weiter();
 }
 
 async function ablehnen() {
@@ -336,7 +353,14 @@ async function ablehnen() {
   await drive.dateiVerschieben(aktuell.datei.id, ctx.zustand.unterordner['_Abgelehnt'].id, ctx.zustand.unterordner['_Eingang'].id);
   schliessen();
   ctx.meldung('Abgelehnt und nach _Abgelehnt verschoben.', 'ok');
+  await weiter();
+}
+
+/** Nach einer Entscheidung: offene Belege gleich anzeigen. */
+async function weiter() {
   await zaehlerAktualisieren();
+  const rest = await drive.ordnerInhalt(ctx.zustand.unterordner['_Eingang'].id);
+  if (rest.length) await zurPruefungZeigen();
 }
 
 function schliessen() {

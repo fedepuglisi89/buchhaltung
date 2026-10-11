@@ -54,6 +54,38 @@ export async function pdfZeilen(blob, maxSeiten = 4) {
   return zeilen;
 }
 
+/** Seitenzahl und Textmenge je Seite – eingescannte PDFs haben (fast) keinen Text. */
+export async function pdfInfo(blob) {
+  const lib = await pdfjsLaden();
+  const doc = await lib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()), verbosity: 0 }).promise;
+  const text = [];
+  for (let p = 1; p <= doc.numPages; p++) {
+    const tc = await (await doc.getPage(p)).getTextContent();
+    text.push(tc.items.reduce((n, it) => n + (it.str || '').trim().length, 0));
+  }
+  return { seiten: doc.numPages, text, gescannt: text.every((n) => n < 40) };
+}
+
+/** Rendert PDF-Seiten als JPEG-Bilder (für eingescannte Belege). */
+export async function pdfSeitenAlsBilder(blob, nurSeite = null, maxSeite = 2400) {
+  const lib = await pdfjsLaden();
+  const doc = await lib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()), verbosity: 0 }).promise;
+  const bilder = [];
+  for (let p = 1; p <= doc.numPages; p++) {
+    if (nurSeite && p !== nurSeite) continue;
+    const seite = await doc.getPage(p);
+    const v1 = seite.getViewport({ scale: 1 });
+    const vp = seite.getViewport({ scale: Math.min(4, maxSeite / Math.max(v1.width, v1.height)) });
+    const c = document.createElement('canvas');
+    c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+    const g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    await seite.render({ canvasContext: g, viewport: vp }).promise;
+    bilder.push(await new Promise((ok) => c.toBlob(ok, 'image/jpeg', 0.9)));
+  }
+  return bilder;
+}
+
 const wertNach = (zeilen, label) => {
   for (const z of zeilen) {
     const teile = z.split(' | ');
@@ -300,7 +332,12 @@ export async function analysieren(blob, dateiname, einst, fortschritt) {
     fortschritt?.('PDF wird gelesen …');
     let zeilen = [];
     try { zeilen = await pdfZeilen(blob); } catch { return { typ: null, fehler: 'Das PDF konnte nicht gelesen werden.' }; }
-    if (!zeilen.length) return { typ: 'Auskommen', ...leer(einst), hinweise: ['Das PDF enthält keinen Text (eingescannt?). Bitte die Daten von Hand eintragen.'] };
+    if (zeilen.join('').replace(/\s|\|/g, '').length < 40) {
+      // Eingescannt: erste Seite wie ein Foto behandeln (QR-Code + Texterkennung)
+      const [bild] = await pdfSeitenAlsBilder(blob, 1);
+      if (bild) return bildAnalysieren(bild, einst, fortschritt);
+      return { typ: 'Auskommen', ...leer(einst), hinweise: ['Das PDF enthält keinen Text. Bitte die Daten von Hand eintragen.'] };
+    }
     return magenta(zeilen, einst) || appointmed(zeilen, einst) || allgemeinPdf(zeilen, einst);
   }
   if (/^image\//.test(blob.type) || /\.(jpe?g|png|heic|heif|webp)$/i.test(dateiname)) return bildAnalysieren(blob, einst, fortschritt);

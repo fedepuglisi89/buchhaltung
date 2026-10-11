@@ -48,5 +48,6 @@ export const JAHRESORDNER = [
   ['Auskommen', 'Tmobile'],
   ['Auskommen', 'Bewirtungkosten'],
   ['_Abgelehnt'],
+  ['Scans'],
   ['_Backup'],
 ];
