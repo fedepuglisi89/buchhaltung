@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fedephysio Buchhaltung</title>
+  <meta name="theme-color" content="#1F4E78">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Buchhaltung">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://accounts.google.com/gsi/client" async></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="kopf">
+    <div class="marke">
+      <img src="icon-192.png" alt="" width="36" height="36">
+      <div>
+        <h1>Fedephysio Buchhaltung</h1>
+        <label class="jahr">Steuerjahr
+          <select id="steuerjahr" aria-label="Steuerjahr"></select>
+        </label>
+      </div>
+    </div>
+    <button id="abmelden" class="leise" hidden>Abmelden</button>
+  </header>
+
+  <main>
+    <p id="meldung" class="meldung" role="status" hidden></p>
+
+    <section id="ansicht-start" class="karte start">
+      <h2>Willkommen</h2>
+      <p>Melde dich mit deinem Google-Konto an. Die App sieht in deinem Google Drive nur die Dateien, die sie selbst anlegt.</p>
+      <button id="anmelden" class="haupt">Mit Google anmelden</button>
+    </section>
+
+    <section id="ansicht-dashboard" hidden>
+      <div class="raster aktionen">
+        <button class="haupt gross" data-bald>Dokument hochladen</button>
+        <button class="haupt gross" data-bald>Kilometer eintragen</button>
+        <button class="gross" data-bald>Zur Prüfung</button>
+      </div>
+
+      <section class="karte">
+        <h2>Jahresübersicht</h2>
+        <div class="raster zahlen">
+          <div><span class="label">Gesamteinnahmen</span><span class="wert">–</span></div>
+          <div><span class="label">Gesamtausgaben</span><span class="wert">–</span></div>
+          <div><span class="label">Differenz</span><span class="wert">–</span></div>
+        </div>
+        <p class="hinweis">Die Summen erscheinen, sobald die ersten Buchungen erfasst sind.</p>
+      </section>
+
+      <section class="karte">
+        <h2>Blätter</h2>
+        <div class="raster blaetter">
+          <button data-bald>Einkommen</button>
+          <button data-bald>Auskommen</button>
+          <button data-bald>Tmobile</button>
+          <button data-bald>Bewirtungkosten</button>
+          <button data-bald>Km Fahrrad</button>
+        </div>
+      </section>
+
+      <section class="karte">
+        <h2>Dateien</h2>
+        <p><strong id="excel-name">–</strong><br><span class="hinweis">Zuletzt geändert: <span id="excel-geaendert">–</span></span></p>
+        <div class="raster blaetter">
+          <a id="excel-oeffnen" class="knopf" target="_blank" rel="noopener">Excel öffnen</a>
+          <a id="drive-oeffnen" class="knopf" target="_blank" rel="noopener">Google Drive öffnen</a>
+          <button data-bald>Einstellungen</button>
+        </div>
+        <details id="einrichtung" hidden>
+          <summary>Prüfung der Ordnerstruktur</summary>
+          <ul id="einrichtung-liste"></ul>
+        </details>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
