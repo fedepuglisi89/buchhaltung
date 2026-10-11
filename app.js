@@ -3,6 +3,8 @@ import * as drive from './drive.js';
 import { Arbeitsmappe, ExcelFehler } from './xlsx.js';
 import { kmBuchen, kmDubletten } from './buchung.js';
 import { jahresuebersicht } from './auswertung.js';
+import { einrichtenDokumente, zaehlerAktualisieren, kategorienLaden } from './dokumente.js';
+import { einrichtenImport } from './import.js';
 
 const $ = (sel) => document.querySelector(sel);
 const zustand = {
@@ -97,12 +99,14 @@ async function einrichten() {
   zustand.excel = await drive.metadaten(excel.id);
   zeigeExcel();
   await uebersichtAktualisieren();
+  await zaehlerAktualisieren();
   meldung(`Steuerjahr ${zustand.jahr} ist bereit.`, 'ok');
 }
 
 async function uebersichtAktualisieren(mappe) {
   try {
     mappe ??= await Arbeitsmappe.laden(await drive.dateiLesen(zustand.excel.id));
+    await kategorienLaden(mappe);
     const u = await jahresuebersicht(mappe);
     const [a, b, c] = document.querySelectorAll('.zahlen .wert');
     a.textContent = eur(u.einnahmen); b.textContent = eur(u.ausgaben); c.textContent = eur(u.differenz);
@@ -259,6 +263,9 @@ function init() {
     if (drive.angemeldet()) await einrichten();
   }));
 
+  einrichtenDokumente({ zustand, meldung, sicher, sicherSpeichern, eur, datumDE });
+  einrichtenImport({ zustand, meldung, sicher, sicherSpeichern, eur, datumDE,
+    mappeLaden: async () => Arbeitsmappe.laden(await drive.dateiLesen(zustand.excel.id)) });
   $('#km-oeffnen').addEventListener('click', kmOeffnen);
   for (const id of ['#km-datum', '#km-km', '#km-satz']) $(id).addEventListener('input', kmVorschau);
   $('#km-arbeitstag').addEventListener('click', () => { $('#km-km').value = zustand.einstellungen.Arbeitsweg_km; kmVorschau(); });

@@ -87,7 +87,7 @@ async function anfrage(url, optionen = {}, versuch = 0) {
 }
 
 const esc = (s) => s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-const FELDER = 'id,name,mimeType,webViewLink,modifiedTime,version,md5Checksum';
+const FELDER = 'id,name,mimeType,webViewLink,modifiedTime,version,md5Checksum,appProperties,parents,createdTime';
 
 export async function suche(name, elternId, mime) {
   let q = `name = '${esc(name)}' and '${elternId}' in parents and trashed = false`;
@@ -109,8 +109,8 @@ export async function ordnerFindenOderAnlegen(name, elternId = 'root') {
 }
 
 /** Lädt eine neue Datei hoch (keine Umwandlung in Google-Format). */
-export async function dateiHochladen(name, elternId, blob, mime) {
-  const meta = { name, parents: [elternId], mimeType: mime };
+export async function dateiHochladen(name, elternId, blob, mime, appProperties) {
+  const meta = { name, parents: [elternId], mimeType: mime, ...(appProperties ? { appProperties } : {}) };
   const form = new FormData();
   form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
   form.append('file', blob);
@@ -145,4 +145,27 @@ export async function dateiKopieren(id, name, elternId) {
     body: JSON.stringify({ name, parents: [elternId] }),
   });
   return r.json();
+}
+
+/** Verschiebt (und benennt optional um) – es entsteht keine Kopie. */
+export async function dateiVerschieben(id, nachId, vonId, neuerName) {
+  const q = `addParents=${nachId}&removeParents=${vonId}&fields=${FELDER}`;
+  const r = await anfrage(`${API}/files/${id}?${q}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(neuerName ? { name: neuerName } : {}),
+  });
+  return r.json();
+}
+
+export async function ordnerInhalt(ordnerId) {
+  const q = `'${ordnerId}' in parents and trashed = false and mimeType != 'application/vnd.google-apps.folder'`;
+  const r = await anfrage(`${API}/files?q=${encodeURIComponent(q)}&fields=files(${FELDER})&orderBy=createdTime&spaces=drive&pageSize=200`);
+  return (await r.json()).files;
+}
+
+export async function sucheHash(hash) {
+  const q = `appProperties has { key='hash' and value='${hash}' } and trashed = false`;
+  const r = await anfrage(`${API}/files?q=${encodeURIComponent(q)}&fields=files(${FELDER})&spaces=drive`);
+  return (await r.json()).files;
 }

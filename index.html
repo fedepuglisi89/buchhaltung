@@ -40,10 +40,64 @@
 
     <section id="ansicht-dashboard" hidden>
       <div class="raster aktionen">
-        <button class="haupt gross" data-bald>Dokument hochladen</button>
+        <button id="dok-oeffnen" class="haupt gross">Dokument hochladen</button>
+        <input id="dok-datei" type="file" accept="application/pdf,image/*" multiple hidden>
         <button id="km-oeffnen" class="haupt gross">Kilometer eintragen</button>
-        <button class="gross" data-bald>Zur Prüfung</button>
+        <button id="pruef-oeffnen" class="gross">Zur Prüfung</button>
+        <button id="imp-oeffnen" class="gross">Appointmed-Zahlungen importieren</button>
+        <input id="imp-datei" type="file" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
       </div>
+
+      <section id="import" class="karte" hidden>
+        <h2>Appointmed-Zahlungen importieren</h2>
+        <p id="imp-info" class="hinweis"></p>
+        <p class="hinweis">Maßgeblich ist das Zahlungsdatum: eine Rechnung von 2025, die 2026 bezahlt wurde, zählt für 2026. Übernommen werden nur Rechnungen mit Status „Bezahlt“ und Zahlungsdatum. Offene, stornierte und bereits gebuchte Rechnungen werden angezeigt, können aber nicht gebucht werden.</p>
+        <div class="tabelle-scroll">
+          <table class="tabelle">
+            <thead><tr><th></th><th>Zahlungsdatum</th><th>Rechnungsempfänger</th><th>Rechnungsnr.</th><th>Zahlungsart</th><th>Betrag</th><th>Hinweis</th></tr></thead>
+            <tbody id="imp-zeilen"></tbody>
+          </table>
+        </div>
+        <div class="knoepfe">
+          <button id="imp-buchen" class="haupt">Freigeben und buchen</button>
+          <button id="imp-abbrechen">Abbrechen</button>
+        </div>
+      </section>
+
+      <section id="pruef-liste" class="karte" hidden>
+        <h2>Zur Prüfung</h2>
+        <ul id="pruef-liste-eintraege" class="liste"></ul>
+      </section>
+
+      <section id="pruefung" class="karte" hidden>
+        <h2>Dokument prüfen</h2>
+        <div class="pruef-raster">
+          <div id="pruef-original" class="original"></div>
+          <div>
+            <label class="typ">Dokumenttyp
+              <select id="pruef-typ">
+                <option value="Einkommen">Einkommen (eigene Rechnung)</option>
+                <option value="Auskommen">Auskommen (Ausgabe)</option>
+                <option value="Tmobile">Tmobile</option>
+                <option value="Bewirtungkosten">Bewirtungkosten</option>
+              </select>
+            </label>
+            <p id="pruef-typ-hinweis" class="warnung"></p>
+            <ul id="pruef-hinweise" class="hinweise"></ul>
+            <div id="pruef-felder" class="formular eng"></div>
+            <h3>Vorschau der Buchung</h3>
+            <div id="pruef-vorschau" class="vorschau"></div>
+            <p id="pruef-warnung" class="warnung" hidden></p>
+            <div class="knoepfe">
+              <button id="pruef-buchen" class="haupt">Freigeben und buchen</button>
+              <button id="pruef-zurueck">Zurückstellen</button>
+              <button id="pruef-ablegen" hidden>Nur ablegen (bereits gebucht)</button>
+              <button id="pruef-ablehnen" class="gefahr">Ablehnen</button>
+            </div>
+          </div>
+        </div>
+        <datalist id="kategorien"></datalist>
+      </section>
 
       <section id="km-formular" class="karte" hidden>
         <h2>Kilometer eintragen</h2>

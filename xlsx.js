@@ -305,6 +305,19 @@ export class Arbeitsmappe {
     return ziel;
   }
 
+  /** Alle Zeilen eines Blattes als Werte-Listen (ohne Kopfzeile). */
+  async blattZeilen(blatt, mitKopf = false) {
+    const sDoc = (await this.#doc(this.blaetter[blatt].pfad)).doc;
+    const aus = [];
+    for (const [r, row] of [...this.#zeilenMap(sDoc)].sort((a, b) => a[0] - b[0])) {
+      if (r === 1 && !mitKopf) continue;
+      const z = [];
+      for (const c of kinder(row, 'c')) z[spalteZuIndex(zelleTeilen(c.getAttribute('r'))[0]) - 1] = this.#wert(c);
+      aus.push(z);
+    }
+    return aus;
+  }
+
   /** Hängt eine Zeile ans Ende eines Blattes ohne Tabelle (z. B. _System). */
   async zeileAnhaengen(blatt, werteListe) {
     const eintrag = await this.#doc(this.blaetter[blatt].pfad);

@@ -71,3 +71,37 @@ button.klein { min-height: 36px; padding: 6px 12px; font-size: 14px; }
 .warnung { color: var(--fehler); margin: 12px 0 0; font-size: 14px; }
 .knoepfe { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 button:disabled { opacity: .6; cursor: wait; }
+
+.pruef-raster { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { main { max-width: 1180px; } .pruef-raster { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); } }
+.original { display: flex; flex-direction: column; gap: 8px; }
+.original img, .original canvas { width: 100%; height: auto; border: 1px solid var(--rand); border-radius: 8px; background: #fff; max-height: 80vh; object-fit: contain; }
+.original a { font-size: 13px; color: var(--blau); }
+.formular.eng { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.formular label { position: relative; }
+.formular small { font-size: 12px; color: var(--leise); }
+.feldkopf { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.badge { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 99px; }
+.badge.niedrig { background: #fde8e6; color: #b3261e; }
+.badge.mittel { background: #fff3d6; color: #7a5300; }
+@media (prefers-color-scheme: dark) { .badge.niedrig { background: #4a1d1a; color: #f2a29b; } .badge.mittel { background: #43360f; color: #f0cf7a; } }
+.einheit { position: absolute; right: 12px; bottom: 12px; color: var(--leise); font-size: 14px; }
+.typ { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--leise); margin-bottom: 4px; }
+.typ select { font-size: 16px; padding: 10px; min-height: 44px; }
+select { min-height: 44px; font-size: 16px; }
+.hinweise { margin: 8px 0 12px; padding-left: 18px; font-size: 13px; color: var(--leise); }
+.hinweise:empty { display: none; }
+.liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.liste button { text-align: left; }
+button.gefahr { color: var(--fehler); }
+#pruef-typ-hinweis:empty { display: none; }
+
+.tabelle-scroll { overflow-x: auto; max-height: 60vh; overflow-y: auto; border: 1px solid var(--rand); border-radius: 8px; margin-top: 12px; }
+.tabelle { border-collapse: collapse; width: 100%; font-size: 14px; }
+.tabelle th, .tabelle td { padding: 8px 10px; border-bottom: 1px solid var(--rand); text-align: left; white-space: nowrap; }
+.tabelle th { position: sticky; top: 0; background: var(--flaeche); font-weight: 600; color: var(--leise); font-size: 12px; }
+.tabelle td:nth-child(6) { text-align: right; font-variant-numeric: tabular-nums; }
+.tabelle tr.aus td { color: var(--leise); text-decoration: line-through; }
+.tabelle tr.aus td:last-child { text-decoration: none; }
+.tabelle tr.pruefen td:last-child { color: var(--fehler); }
+.tabelle input[type=checkbox] { width: 20px; height: 20px; min-height: 0; }

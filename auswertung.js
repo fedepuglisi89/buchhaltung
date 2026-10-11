@@ -3,7 +3,9 @@
 const zahl = (v) => (typeof v === 'number' ? v : null);
 
 /** Wert einer Zelle: Zahl direkt, Formel über bekannte Regeln, sonst gespeicherter Excel-Wert. */
-function zeilenBetrag(blatt, w) {
+const cent = (x) => (x == null ? null : Math.round(x * 100) / 100);
+function zeilenBetrag(blatt, w) { return cent(zeilenBetragRoh(blatt, w)); }
+function zeilenBetragRoh(blatt, w) {
   const spalte = { 'Km Fahrrad': 'Betrag (€)', Tmobile: 'Absetzbarer Betrag (€)', Bewirtungkosten: 'Absetzbarer Betrag (€)' }[blatt];
   const v = w[spalte];
   if (typeof v === 'number') return v;
