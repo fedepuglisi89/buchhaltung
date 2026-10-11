@@ -41,9 +41,26 @@
     <section id="ansicht-dashboard" hidden>
       <div class="raster aktionen">
         <button class="haupt gross" data-bald>Dokument hochladen</button>
-        <button class="haupt gross" data-bald>Kilometer eintragen</button>
+        <button id="km-oeffnen" class="haupt gross">Kilometer eintragen</button>
         <button class="gross" data-bald>Zur Prüfung</button>
       </div>
+
+      <section id="km-formular" class="karte" hidden>
+        <h2>Kilometer eintragen</h2>
+        <div class="formular">
+          <label>Datum<input type="date" id="km-datum"></label>
+          <label>Gefahrene Kilometer<input type="number" id="km-km" step="0.1" min="0" inputmode="decimal"></label>
+          <label>Satz (€/km)<input type="number" id="km-satz" step="0.01" min="0" inputmode="decimal"></label>
+        </div>
+        <button id="km-arbeitstag" type="button" class="klein">Arbeitstag</button>
+        <h3>Vorschau</h3>
+        <div id="km-vorschau" class="vorschau"></div>
+        <p id="km-warnung" class="warnung" hidden></p>
+        <div class="knoepfe">
+          <button id="km-buchen" class="haupt">Freigeben und buchen</button>
+          <button id="km-abbrechen">Abbrechen</button>
+        </div>
+      </section>
 
       <section class="karte">
         <h2>Jahresübersicht</h2>
@@ -52,7 +69,7 @@
           <div><span class="label">Gesamtausgaben</span><span class="wert">–</span></div>
           <div><span class="label">Differenz</span><span class="wert">–</span></div>
         </div>
-        <p class="hinweis">Die Summen erscheinen, sobald die ersten Buchungen erfasst sind.</p>
+        <p id="uebersicht-hinweis" class="hinweis">Wird berechnet …</p>
       </section>
 
       <section class="karte">

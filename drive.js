@@ -127,3 +127,22 @@ export async function metadaten(id) {
   const r = await anfrage(`${API}/files/${id}?fields=${FELDER}`);
   return r.json();
 }
+
+/** Ersetzt den Inhalt einer bestehenden Datei (neue Version bei Drive, alte Versionen bleiben erhalten). */
+export async function dateiAktualisieren(id, blob, mime) {
+  const r = await anfrage(`${UPLOAD}/files/${id}?uploadType=media&fields=${FELDER}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': mime },
+    body: blob,
+  });
+  return r.json();
+}
+
+export async function dateiKopieren(id, name, elternId) {
+  const r = await anfrage(`${API}/files/${id}/copy?fields=${FELDER}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, parents: [elternId] }),
+  });
+  return r.json();
+}
